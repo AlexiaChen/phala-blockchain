@@ -1,0 +1,127 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "phactory只init_runtime分析",
+  "steps": [
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "初始化了大部分Runtime的信息和状态,这个函数是RPC的caller调用过来的，caller就是Relayer这个叫pherry的中继器，pherry连接pRuntime和phala blochain节点。\n\n另外，对于参数genesis state这个参数，是pherry最终通过substrate的JSON RPC state_getPairs(prefix:[], genesis_block_hash) 拿到的所有StorageKey的KV数据，并转成一个扁平化的KV Vec传递过来的",
+      "line": 276,
+      "selection": {
+        "start": {
+          "line": 325,
+          "character": 54
+        },
+        "end": {
+          "line": 325,
+          "character": 62
+        }
+      }
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "如果设置了一个预定义的key，那么通过这个key作为种子初始化sr25519的公私钥对",
+      "line": 293
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "这个私钥就是worker节点身份的秘钥，用来初始化runtimedata，这个data存放在seal_path指定的路径",
+      "line": 300
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "如果有这个预定义的身份秘钥，就说明是开发者模式，就直接保存runtime data到seal path了",
+      "line": 323
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "如果没有预定义的身份私钥，就试图加载runtime data，如果加载错误，再进行保存data",
+      "line": 325
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "如果加载错误，就重新生成一个sr25519的身份秘钥来保存runtime data\n",
+      "line": 329
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "这个runtimedata的数据有身份秘钥，是否要相信该秘钥，创世块hash，和是否是开发者模式。全部写入sealing path下的文件",
+      "line": 358
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "文件名叫runtime-data.seal 记住这个文件名，runtimedata的文件",
+      "line": 368
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "runtimedata中的身份私钥，可以生成ECDH key，是通过算法Derive派生的。也就是每一个身份私钥都对应自己的一个ECDH key",
+      "line": 318
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "ECDSA的公钥就是身份秘钥的公钥",
+      "line": 320
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "Runtime Info的主要信息在这里，ECDSA公钥，ECDH公钥，运营者是一个AccountId，还有创世块hash，机器ID",
+      "line": 337
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "Runtime Info最终被封装成一个响应response",
+      "line": 405
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "根据创世块的区块头(区块高度编号，hash)，Authority Set和创世块的StorageProof来初始化main bridge",
+      "line": 351
+    },
+    {
+      "file": "crates/phactory/src/light_validation/mod.rs",
+      "description": "本质就是验证state trie树的证明和验证 validator节点集合",
+      "line": 122
+    },
+    {
+      "file": "crates/phactory/src/light_validation/mod.rs",
+      "description": "桥的信息就是区块头和对应的validator集合",
+      "line": 125
+    },
+    {
+      "file": "crates/phactory/src/light_validation/mod.rs",
+      "description": "可以有很多个桥，也就是可以通过init_runtime桥接好几个链？这个待定",
+      "line": 130
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "平行链和solo chain的storage同步器可能有点不同，平行链需要提供创世块的下一个区块的高度编号，当然同步器都需要提供桥的信息，这里的桥可以认为是连接worker节点同步目标链状态的一种桥接信息，当然，同步器还需要\n区块验证器的配合，也就是:\n\n```rust\nlet mut light_client = LightVidation::new()\n```\n\nStorage同步器内部初始化大同小异",
+      "line": 354
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "可以看到storage 同步器和收发消息队列，以及合约Keeper都被封装到RuntimeState结构体内了。注意，此时的chain storage（trie结构）初始化为空",
+      "line": 365
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "通过创世块的MPT的一个KV的扁平化Vec，来构建一个chain storage的MPT结构，这下chain storage有数据了，后面有什么变化就随着区块同步到worker node直接在这个chain storage的MPT上CRUD了",
+      "line": 374
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "平台相关的字段，sealing path和storage path，是否是开发模式，身份秘钥对，ECDH key公私钥对，runtimestate中的收发队列，合约的Keeper都被封装进System结构体了",
+      "line": 389
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "至于RPC的返回信息，只返回runtime info们还有创世块hash，ECDSA和ECDH的公钥。返回的信息被最终作为Phactory platform的runtime info成员",
+      "line": 405
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "返回完成",
+      "line": 416
+    }
+  ],
+  "ref": "code-tour"
+}
