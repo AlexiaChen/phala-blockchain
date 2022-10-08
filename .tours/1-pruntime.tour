@@ -1,6 +1,8 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
   "title": "pruntime启动流程分析",
+  "isPrimary": true,
+  "nextTour": "RocketAPIServer启动流程",
   "steps": [
     {
       "file": "standalone/pruntime/src/main.rs",

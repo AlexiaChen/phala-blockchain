@@ -1,0 +1,42 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "phactory之bin api",
+  "steps": [
+    {
+      "file": "crates/phactory/src/bin_api_service.rs",
+      "description": "这里主要是Phactory的binary的RPC API的处理入口，主要是这几个需要传输大的payload需要RPC才做的。比如 dispatch_block,sync_header什么的\n\n本质上也是对Phactory<Platform>这个结构体的实现，然后调用这个结构体的底层对应的方法。\n\n如果运行本地测试环境，那么会看到终端上显示如下日志:\n\n```txt\nrocket::server] POST /prpc/PhactoryAPI.GetInfo:\nrocket::server] POST /prpc/PhactoryAPI.GetEndpointInfo:\nrocket::server] POST /prpc/PhactoryAPI.GetEgressMessages:\nrocket::server] POST /prpc/PhactoryAPI.GetInfo:\nrocket::server] POST /prpc/PhactoryAPI.SyncHeader:\nrocket::server] POST /prpc/PhactoryAPI.DispatchBlocks:\n\n.... // repeat pattern in ordered\n\nrocket::server] POST /prpc/PhactoryAPI.GetInfo:\nrocket::server] POST /prpc/PhactoryAPI.GetEndpointInfo:\nrocket::server] POST /prpc/PhactoryAPI.GetEgressMessages:\nrocket::server] POST /prpc/PhactoryAPI.GetInfo:\nrocket::server] POST /prpc/PhactoryAPI.SyncHeader:\nrocket::server] POST /prpc/PhactoryAPI.DispatchBlocks:\n```",
+      "line": 34
+    },
+    {
+      "file": "crates/phactory/src/bin_api_service.rs",
+      "description": "其实真正的bin RPC的入口是这个函数，传递一些input参数，它是被之前提到的runtime函数调用的。",
+      "line": 74
+    },
+    {
+      "file": "standalone/pruntime/src/runtime.rs",
+      "description": "就是这个函数真正调用了bin rpc的处理，专门处理这样大API",
+      "line": 12
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "然后又被这个rust的macro调用，这个调用叫do_ecall_handle，这个宏就是之前有提到过的各种prpc中的macro调用，比如proxy_get,proxy_get,proxy_bin",
+      "line": 30,
+      "selection": {
+        "start": {
+          "line": 32,
+          "character": 24
+        },
+        "end": {
+          "line": 32,
+          "character": 36
+        }
+      }
+    },
+    {
+      "file": "crates/phactory/src/bin_api_service.rs",
+      "description": "当然，这里的bin RPC其实没有多少个，大部分的RPC具体业务实现都在prpc_service.rs中了，bin RPC其实也是调用的这里面的函数，所有RPC业务都在prpc_service.rs中。bin API service只是一个中转层。\n\n后面我们会着重分析Phactory<Platform>这个结构体和真正的RPC业务",
+      "line": 53
+    }
+  ],
+  "ref": "code-tour"
+}

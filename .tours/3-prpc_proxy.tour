@@ -1,0 +1,42 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "prpc_proxy分析",
+  "steps": [
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "这里是把prpc的各种方法挂到/prpc这个URL下面",
+      "line": 284
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "用post方法调用/rpc/<method>的各种prpc服务。有payload和limits。这个就是统一的prpc入口代理",
+      "line": 189
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "这里的limit相当于是限制特定method的payload 这个data字段的字节大小，只能最大读取limit个字节的data数据",
+      "line": 191
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "对PRC服务进行请求，比如PRPC有:\n   GetInfo => 1.kibibytes(),\n    SyncHeader => 100.mebibytes(),\n    SyncParaHeader => 100.mebibytes(),\n        SyncCombinedHeaders => 100.mebibytes(),\n        DispatchBlocks => 100.mebibytes(),\n        InitRuntime => 10.mebibytes(),\n        GetRuntimeInfo => 1.kibibytes(),\n        GetEgressMessages => 1.kibibytes(),\n        ContractQuery => 500.kibibytes(),\n        GetWorkerState => 1.kibibytes(),\n        AddEndpoint => 10.kibibytes(),\n        RefreshEndpointSigningTime => 10.kibibytes(),\n        GetEndpointInfo => 1.kibibytes(),\n        DerivePhalaI2pKey => 10.kibibytes(),\n        Echo => 1.mebibytes(),\n        HandoverCreateChallenge => 10.kibibytes(),\n        HandoverStart => 10.kibibytes(),\n        HandoverAcceptChallenge => 10.kibibytes(),\n        HandoverReceive => 10.kibibytes(),\n        SignEndpointInfo => 32.kibibytes(),\n        ConfigNetwork => 10.kibibytes(),\n        HttpFetch => 100.mebibytes(),\n\n通过ecall_prpc_request对以上的方法进行实际请求，并附带其data 参数",
+      "line": 201
+    },
+    {
+      "file": "standalone/pruntime/src/runtime.rs",
+      "description": "通过   static ref APPLICATION: RpcService<GraminePlatform> = RpcService::new(GraminePlatform); 的全局RPC服务分发请求",
+      "line": 69
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "实际的ecall_prpc的请求会到这里，这里之后再分析",
+      "line": 769
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "分析返回的状态码和output，该报错就报错，并结束prpc_proxy流程。",
+      "line": 202
+    }
+  ],
+  "ref": "code-tour"
+}

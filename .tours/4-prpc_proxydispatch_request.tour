@@ -1,0 +1,27 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "prpc_proxy分析之dispatch_request",
+  "steps": [
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "这里就是prpc_proxy最终的请求入口，调用每个方法都是经过这里。path参数就是对应的RPC的URL data就是其RPC方法的参数",
+      "line": 769
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "这里的RPC server其实就是PhactoryApiServer了，所以new了一个出来",
+      "line": 777
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "异步调用PhactoryApiServer的disptch_request接口，并检查返回错误，有解码出错，或者App出错，或者合约查询出错，因为合约是运行在这个pRuntime worker node上的，所以有可能合约查询出错。\n后面主要是分析PhactoryApiServer的dispatch_request接口",
+      "line": 782
+    },
+    {
+      "file": "crates/prpc-build/src/server.rs",
+      "description": "其实PhactoryApiServer的这个接口，是对每个RPC方法用rust的macro生成对应的request的。\n其实这整个server.rs文件都是对RPC的转接实现，做一些自动化的生成，通用的处理代码。\n\n这个通用的处理代码全是为PRPC服务的，所以这些代码被组织成一个叫prpc-build的crate。这个crate里面生成一些请求和相应结构对应的rust代码，通过protobuf定义的数据结构，也传入了protobuf的格式文件\n路径",
+      "line": 64
+    }
+  ],
+  "ref": "code-tour"
+}

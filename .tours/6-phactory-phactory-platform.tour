@@ -1,0 +1,87 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "phactory之Phactory-Platform结构体",
+  "steps": [
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "整个pRuntime节点，这个结构体是最重要的之一，里面大部分保存着Phactory的元数据，该结构体会序列化反序列化到文件，支持检查点恢复。这个结构体支持状态恢复。",
+      "line": 228
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "初始化pRuntime节点传递过来的命令行参数，包括pRuntime的持久化路径，状态存储文件保存路径，秘密文件路径。http的访问控制端口(public port), 检查点的间隔等",
+      "line": 230
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "是否是开发模式",
+      "line": 232
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "机器ID，暂时没有发现哪里设置它了",
+      "line": 233
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "运行时信息，创世块hash，中继链的header，worker的公钥，ECDH公钥，还有XGS attestation证明。都是在init_time里面设置的这个字段。这些信息是作为一个worker节点的注册信息",
+      "line": 234
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "里面有消息发送和接收队列，存储同步器，创世块hash，也同样在init_runtime中被设置。创世块hash是RPC的caller传递过来的，其他都是根据传递过来RPC参数进行默认或条件初始化",
+      "line": 235
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "边任务管理器，其实现就是一个Task的Vec向量",
+      "line": 236
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "这个结构体也很重要，先暂时skip。里面有很多字段，各种事件和channel。这个字段在init_runtime和load_state里面被设置",
+      "line": 242
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "交接的ECDH协商的秘钥",
+      "line": 246
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "最近的检查点，创建检查点文件(take_checkpoint) 的时候被设置，检查点文件名字是根据当前区块高度，真正的检查点其实是把Phactory Platform这整个结构体的可序列化字段。全部dump到\n文件里面，last_checkpoint被更新为当前时间。检查点之间有间隔，更新检查点和保存检查点是由RPC DispatchBlocks驱动的。",
+      "line": 250
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "查询调度器，主要针对合约的查询，pRuntime是运行合约的地方。针对某个特定的合约ID查询。ID是256bit的hash值。RPC ContractQuery会使用这个字段。",
+      "line": 256
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "网络配置，除了new出来默认的，就是由RPC ConfigNetwork主动设置的",
+      "line": 259
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "这个函数是在pRuntime节点启动的时候被调用的，用来尝试从文件中的最近的检查点恢复 Phactory platform这个结构体的状态",
+      "line": 474
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "由RPC InitRuntime调用。用来初始化很多runtime节点的状态",
+      "line": 276,
+      "selection": {
+        "start": {
+          "line": 300,
+          "character": 18
+        },
+        "end": {
+          "line": 300,
+          "character": 35
+        }
+      }
+    }
+  ],
+  "ref": "code-tour"
+}

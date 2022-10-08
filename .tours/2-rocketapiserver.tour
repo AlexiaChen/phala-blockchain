@@ -1,0 +1,42 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "RocketAPIServer启动流程",
+  "steps": [
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "启动Rocket API server，其实是以http来做的RPC。对于payload较大的，用binary模式，用http传输binary数据。/prpc这个接口是为所有RPC Service服务的。",
+      "line": 246
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "binary模式的几个API接口",
+      "line": 256
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "如果命令行参数打开了剔除API，那么就添加一个可以通过http API关闭pRuntime节点的接口",
+      "line": 278
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "prpc的RPC service是调用phactory API的。",
+      "line": 284
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "API server打开CORS跨域功能，允许跨域访问",
+      "line": 287
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "打开测量RPC的运行时间，测量每个RPC的耗时",
+      "line": 296
+    },
+    {
+      "file": "standalone/pruntime/src/api_server.rs",
+      "description": "API server启动完毕，返回server对象。后续添加进servers数组",
+      "line": 301
+    }
+  ],
+  "ref": "code-tour"
+}
