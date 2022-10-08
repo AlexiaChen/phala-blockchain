@@ -1,0 +1,57 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "pruntime启动流程分析",
+  "steps": [
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "从这里可以看出，这个pruntime的binary节点就是Phala的worker node了，链下执行合约的地方",
+      "line": 15
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "这里主要是运行模式的判断，在gramine的运行模式下是要配置manifest文件，一些秘密的保护文件和存储文件路径是固定的，而其他模式是当前运行目录底下。本质上就是`/dev/attestation/user_report_data` 这个文件存不存在，如果存在就是gramine模式，不存在则是其他。",
+      "line": 86
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "通过pruntime节点的命令行参数设置http监听的地址和port到相关环境变量中。",
+      "line": 110
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "设置日志，以微秒时间戳记录日志，info级别的消息会被默认过滤，如果没有设置default filter的话。如果指定CPU的核心数，那就用指定的核心数，没有指定则获取当前机器的CPU核心数。这个核心数是用在对这个节点做基准测试的。",
+      "line": 118
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "根据CPU核心数构建启动基准测试的线程",
+      "line": 147
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "这里是把大部分的命令行参数：秘密存储文件路径，git的commit id，检查点是否打开等参数统一打包成一个InitArgs的结构体，传递给runtime作初始化。这里的runtime就可以理解为RPC服务器形式的enclave了。ecall_init中做了从检查点中恢复worker node的数据状态，并将命令行参数传递给RPC Service。检查点是在存储和秘密文件中的。因为参数中有这两个文件的路径。没有这两个文件就恢复不了。",
+      "line": 124
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "如果有ACL访问控制端口指定的情况下，就通过Rocket这个Rust Web框架启动一个ACL访问控制服务器。",
+      "line": 162
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "无论任何时候，都要启动一个内部的API server，这个server其实就是RPC Service了",
+      "line": 175
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "等待每个服务器退出",
+      "line": 184
+    },
+    {
+      "file": "standalone/pruntime/src/main.rs",
+      "description": "pRuntime节点正常退出。",
+      "line": 188
+    }
+  ],
+  "ref": "code-tour"
+}
