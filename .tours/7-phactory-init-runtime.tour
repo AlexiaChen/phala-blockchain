@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/codetour-schema",
-  "title": "phactory只init_runtime分析",
+  "title": "phactory之init_runtime分析",
   "steps": [
     {
       "file": "crates/phactory/src/prpc_service.rs",

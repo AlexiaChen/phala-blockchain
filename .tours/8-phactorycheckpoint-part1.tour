@@ -1,0 +1,92 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "phactory之checkpoint-part1-分析",
+  "steps": [
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "首先，这个Phactory Platform结构体是支持serde的序列化和反序列化的，看结构体的成员的属性宏，个别一些成员会skip掉，不支持序列化和反序列化。既然有这个功能，\n那么它不是支持本地文件保存，读取，就是支持网络传输。相当于这个结构体很重要。要保存它的状态。",
+      "line": 226
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "然后我们随便找一个地方，跟检查点有关的。这个函数是从检查点恢复，需要做的事情。包括重新配置了网络，如果phactory platform的system成员有状态，也同样恢复system。",
+      "line": 426
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "可以看到，on_restored是被deserialize调用的。Phactory的静态成员函数load_state从deserializer中载入状态，恢复状态，on_restored是恢复后需要做的事情。如果不能恢复，报错就行了\n\n注意这个deserialize函数是serde的Deserialize trait函数，这里是overide实现的。\n\ndeserializer也是serde的一个trait",
+      "line": 624
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "对于反序列化，肯定是要读取状态，所以是load_state,接下来看看它做了什么",
+      "line": 557
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "对Phactory的platform的数据实现了Visitor模式，这个Visidtor也是serde提供的一个trait",
+      "line": 560
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "真正反序列化的入口在这里，对Phactory的Data进行了反序列化，一个一个的排队来反序列化。",
+      "line": 607
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "看这个visit_seq的回调函数，它最终会返回Phactory Platform这个结构体类型，这个就是这次我们最关心的结构体，检查点就是用来恢复它的",
+      "line": 567
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "反序列过来的第一个元素就是checkpoint的版本号，如果版本号大于预定义的版本号，那么肯定有问题，就不能继续反序列化了，可能数据格式被毁了",
+      "line": 571
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "反序列化过来的第二个元素只是benchmark的一些状态State，如果不正确，也是错的，缺失了，也不能继续反序列化了。不过我们暂时不太关心这个",
+      "line": 578
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "反序列化的第三个元素就是我们关心的真正的Phactory platform这个结构体了。这个结构体每隔一段时间就会被序列化到文件中保存起来，然后pRuntime worker node启动的时候从最近的检查点来读取回复状态\n\n其实检查点你可以理解为某个时刻的状态快照，跟区块链的区块对应的state root一样。",
+      "line": 582
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "接下来就是回复factory platform中最重要的system成员的状态了\n\n这个成员的状态是从phactory platform中的runtime_state成员中的收发队列来恢复的",
+      "line": 586
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "这里为什么有两个checkpoint helper函数来使用收发队列，我猜测是相当于一把锁，安全引用收发消息队列，占用这两个队列不被其他地方随意使用，因为system这个成员的状态要依赖收发队列的一致性。\n\nsystem成员是第四个反序列化过来的元素",
+      "line": 597
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "对benchmark的state做实际恢复",
+      "line": 602
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "全部做完了返回实际的phactory paltform的状态",
+      "line": 603
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "接下来看序列化的部分，这里跟deserialize一样，都是serde库的trait。序列化的时候，要把phactoary platform的状态从结构体中dump出来，方便后续的写入文件",
+      "line": 613
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "一个元素一个元素的序列化，所以是serialize_seq",
+      "line": 549
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "从这里的序列化的顺序就可以看到，跟反序列化是一一对应的，第一个元素都是checkpoint的版本，依次类推。",
+      "line": 550
+    }
+  ],
+  "ref": "code-tour"
+}

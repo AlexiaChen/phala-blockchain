@@ -1,0 +1,117 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "phactory之checkpoint-part2-分析",
+  "steps": [
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "之前分析了序列化和反序列化部分，比较底层，现在我们要分析检查点相关稍微偏上层的应用，我们首先还是先看从检查点恢复状态的部分，反着来。\n\n首先看这个函数，平台相关的参数，sealing_path，和storage path这几个文件目录都需要传递进来了，函数最后返回Phactory paltform结构体的自身实例，所以很明显，恢复就是恢复其本身。",
+      "line": 474
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "从runtim-data.seal文件中读取pruntime node的私钥等信息，还有创世块hash，是否是开发模式等等。",
+      "line": 481
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "从storage path下拿到全部checkpoint的文件列表， checkpoint的文件形式是\"\\<storage_path\\>/checkpoint.seal-\\<block_number\\>\"这样的格式\n\n也就是拿到所有这个pattern文件名的文件，并对\\<block_number\\>做逆序排序，高到底排序，最后返回checkpoint文件列表，Vec\\<block_number, checkpoint_file_path\\> 这样一个向量",
+      "line": 486
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "首先对最近的区块编号(latest checkpoint block number)对应的检查点的文件进行处理",
+      "line": 492
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "如果打开了checkpoint损坏就删除的选项，就删除这个检查点文件。因为一个检查点就是一个文件，这样的设计方便处理。",
+      "line": 503
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "通过pruntime的身份秘钥来读取latest checkpoint文件",
+      "line": 516
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "这次读取失败，如果可以也需要尝试删除这个损坏的checkpoint文件",
+      "line": 521
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "读取成功，自然就返回Phactory platform结构体实例的状态",
+      "line": 517
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "通过身份秘钥派生出的一个128bit的秘钥，来做aes128gcm对称加密的秘钥来读取文件，创建一个解密reader",
+      "line": 539
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "跟serde搭配的一个解密库来给reader解密，这个reader实际就是一个checkpoint文件了，文件中存放了整个phactory Platform的状态。这里from_reader会真正调用serde的反序列的相关部分，也就是我们之前分析过的。",
+      "line": 542
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "在恢复checkpoint的时候还需要设置pruntime节点的边虚拟机的workers线程数量？还是worker节点数要告知虚拟机？ 这里不确定",
+      "line": 540
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "现在我们来看保存检查点的入口，就在dispatch_block这个函数里面，dispatch_block这个函数也是PRPC调用过来。pherry节点同步块的信息过来的时候，顺便更新检查点。\n\n仔细看，是很多个blocks一起推送过来。每个block number都尝试去是否能保存checkpoint。当然不一定成功，是因为maybe_take_checkpoint里面有一个条件判断。",
+      "line": 256
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "如果关闭检查点功能，那么直接不保存检查点，也就没有恢复功能了",
+      "line": 267
+    },
+    {
+      "file": "crates/phactory/src/prpc_service.rs",
+      "description": "这个last_checkpoint每次保存检查点的时候都会更新成当前时刻。这个条件判断就是与上次last_checkpoint对比现在流逝了多少秒，如果小于检查点时间间隔，就不保存了，直接返回。如果大于等于间隔\n\n那么就更新检查点 ，并更新last_checkpoint这个时间戳成员",
+      "line": 270
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "首先通过system成员拿到woker node的身份秘钥",
+      "line": 437
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "然后生成即将要保存的检查点文件的路径和名称格式，这个格式之前已经分析过，就是\"\\<storage_path\\>/checkpoint.seal-\\<current_block_number\\>\"\n\n以上就是某个区块编码的检查点文件路径。",
+      "line": 444
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "创建文件成功后，把检查点写入文件。当然，文件是加密的。跟恢复检查点那时候逻辑差不多。",
+      "line": 446
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "更新last_checkpoint这个时间戳为当前的，下一次方便判断检查点保存间隔。",
+      "line": 449
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "删除过期的检查点文件，最大保留max_checkpoint_files文件，逻辑是保留当前区块往前推max个区块，也就是最近的max个区块，其余老的checkpoint文件都被删除。",
+      "line": 450
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "写入检查点文件的时候，首先，与恢复检查点的函数一样，都是先从身份私钥中派生一个128bit的key，用这个key来用aes128gcm对称加密算来写文件",
+      "line": 463
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "这里面调用了序列化的相关代码。",
+      "line": 466
+    },
+    {
+      "file": "crates/phactory/src/lib.rs",
+      "description": "刷盘，完毕。",
+      "line": 469
+    }
+  ],
+  "ref": "code-tour"
+}
